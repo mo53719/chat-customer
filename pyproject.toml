@@ -1,0 +1,22 @@
+[project]
+name = "chat_customer"
+version = "0.1.0"
+description = "智能客服系统 - 严格分层 / LangGraph 多 Agent / 双记忆 / 提示词版本管理"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "B", "UP"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

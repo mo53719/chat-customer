@@ -1,0 +1,49 @@
+# Web 框架
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+sse-starlette==2.2.1
+
+# 配置与校验
+pydantic==2.10.4
+pydantic-settings==2.7.1
+
+# LLM / Embedding
+openai==1.59.6
+tiktoken==0.8.0
+
+# 本地 embedding（fastembed + Qdrant ONNX 优化版）
+fastembed==0.7.2
+# sentence-transformers 保留作为兜底（可选）
+sentence-transformers==3.2.1
+# onnxruntime 由 fastembed 自动拉取
+
+# Agent 编排
+langgraph==0.2.61
+
+# 向量库
+qdrant-client==1.12.2
+
+# SQLite 异步
+aiosqlite==0.20.0
+
+# 鉴权与限流
+pyjwt==2.10.1
+passlib[bcrypt]==1.7.4
+slowapi==0.1.9
+
+# 熔断
+pybreaker==1.2.0
+
+# 日志
+loguru==0.7.3
+
+# HTTP
+httpx==0.28.1
+
+# 工具
+python-dotenv==1.0.1
+tenacity==9.0.0
+
+# 表格解析（Excel/CSV）
+openpyxl==3.1.5

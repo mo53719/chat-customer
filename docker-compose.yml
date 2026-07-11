@@ -1,0 +1,21 @@
+version: "3.9"
+
+# 注意：Qdrant 已使用云端服务，无需本地容器。
+# 后端依赖的 Qdrant 配置在 .env 文件中的 QDRANT_URL / QDRANT_API_KEY。
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chat_customer_backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./config:/app/config
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
