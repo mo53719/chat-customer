@@ -49,6 +49,50 @@ class SessionRepo:
         return [_row_to_dto(r) for r in rows]
 
     @staticmethod
+    async def list_visitors(
+        keyword: str | None = None,
+        channel: str | None = None,
+        status: str | None = None,
+        date_from: str | None = None,
+        date_to: str | None = None,
+        offset: int = 0,
+        limit: int = 20,
+    ) -> tuple[list[SessionDTO], int]:
+        """访客管理页：分页 + 筛选 + 搜索，返回 (列表, 总数)。"""
+        where = "WHERE deleted_at IS NULL"
+        params: list[Any] = []
+
+        if keyword:
+            where += " AND (title LIKE ? OR visitor_ip LIKE ? OR visitor_region LIKE ? OR last_message_preview LIKE ?)"
+            kw = f"%{keyword}%"
+            params.extend([kw, kw, kw, kw])
+        if channel:
+            where += " AND channel=?"
+            params.append(channel)
+        if status:
+            where += " AND status=?"
+            params.append(status)
+        if date_from:
+            where += " AND date(created_at) >= ?"
+            params.append(date_from)
+        if date_to:
+            where += " AND date(created_at) <= ?"
+            params.append(date_to)
+
+        # 总数
+        count_row = await SqliteConnection.fetchone(
+            f"SELECT COUNT(*) AS cnt FROM sessions {where}", tuple(params)
+        )
+        total = count_row["cnt"] if count_row else 0
+
+        # 分页数据
+        rows = await SqliteConnection.fetchall(
+            f"SELECT * FROM sessions {where} ORDER BY COALESCE(last_active_at, created_at) DESC LIMIT ? OFFSET ?",
+            tuple(params + [limit, offset]),
+        )
+        return [_row_to_dto(r) for r in rows], total
+
+    @staticmethod
     async def list_recent(limit: int = 50) -> list[SessionDTO]:
         """访客工作台用：返回所有未删除会话，按最近活跃倒序。"""
         sql = ("SELECT * FROM sessions WHERE deleted_at IS NULL "

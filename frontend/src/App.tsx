@@ -1,125 +1,50 @@
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Layout, Menu, Typography } from "antd";
-import {
-  AppstoreOutlined, MessageOutlined, DashboardOutlined, FileTextOutlined,
-  ExperimentOutlined, LikeOutlined, ControlOutlined, DeleteOutlined,
-  UserOutlined, TeamOutlined, ShopOutlined, SettingOutlined,
-  ApiOutlined, WechatOutlined, CustomerServiceOutlined, TeamOutlined as TeamIcon,
-  BarChartOutlined, ThunderboltOutlined, ShopOutlined as ShopIcon,
-  ShoppingCartOutlined, OrderedListOutlined, GlobalOutlined, ContactsOutlined,
-} from "@ant-design/icons";
 import { useAuthStore } from "./stores";
-import LoginPage from "./pages/Login";
-import BusinessHome from "./pages/business";
-import ChatPage from "./pages/chat";
-import DashboardPage from "./pages/dashboard";
-import KnowledgePage from "./pages/knowledge";
-import PromptsPage from "./pages/prompts";
-import FeedbackPage from "./pages/feedback";
-import OpsPage from "./pages/ops";
-import RecyclePage from "./pages/recycle";
+import { buildMenuItems, getOpenKeys } from "./pages/_shared/registry";
 
-// 团队设置下的二级
+import LoginPage from "./pages/login";
+import BusinessHome from "./pages/business";
+import ChatPage from "./pages/business/chat";
+import DashboardPage from "./pages/business/dashboard";
+import PromptsPage from "./pages/business/prompts";
+import FeedbackPage from "./pages/business/feedback";
+import OpsPage from "./pages/business/ops";
+import RecyclePage from "./pages/business/recycle";
+
+// 团队设置
+import TeamHome from "./pages/team";
 import ConfigListPage from "./pages/team/config-list";
-import LLMSettingsPage from "./pages/team/llm-settings";  // 大模型设置
+import LLMSettingsPage from "./pages/team/llm-settings";
+import KnowledgePage from "./pages/team/rag";
 import WechatPage from "./pages/team/wechat";
 import AgentManagePage from "./pages/team/agent-manage";
 import VisitorManagePage from "./pages/team/visitor-manage";
 import ServiceStatsPage from "./pages/team/service-stats";
 import DouyinPage from "./pages/team/douyin";
+import ChannelManagePage from "./pages/team/channel-manage";
 
-// 商城设置下的二级
+// 商城设置
+import MallHome from "./pages/mall";
 import MerchantPage from "./pages/mall/merchant";
-import OrderManagePage from "./pages/mall/order-manage";
-import ProductManagePage from "./pages/mall/product-manage";
+import OrderManagePage from "./pages/mall/orders";
+import ProductManagePage from "./pages/mall/products";
 
 // 个人设置 / 系统设置
-import ProfilePage from "./pages/profile";
-import SystemPage from "./pages/system";
+import PersonalHome from "./pages/personal";
+import ProfilePage from "./pages/personal/profile";
+import SystemHome from "./pages/system";
+import SystemGeneralPage from "./pages/system/general";
+import BadcasePage from "./pages/system/badcase";
 
 const { Header: AntHeader, Sider, Content } = Layout;
 const { Text } = Typography;
-
-const teamSubItems = [
-  { key: "/team/llm", icon: <ApiOutlined />, label: "大模型设置" },
-  { key: "/team/rag", icon: <FileTextOutlined />, label: "RAG 知识库" },
-  { key: "/team/config", icon: <OrderedListOutlined />, label: "配置列表" },
-  { key: "/team/wechat", icon: <WechatOutlined />, label: "微信客服" },
-  { key: "/team/agents", icon: <CustomerServiceOutlined />, label: "客服管理" },
-  { key: "/team/visitors", icon: <TeamIcon />, label: "访客管理" },
-  { key: "/team/service-stats", icon: <BarChartOutlined />, label: "服务统计" },
-  { key: "/team/douyin", icon: <ThunderboltOutlined />, label: "抖音接入" },
-];
-
-const mallSubItems = [
-  { key: "/mall/merchant", icon: <ShopIcon />, label: "商家设置" },
-  { key: "/mall/products", icon: <ShoppingCartOutlined />, label: "商品管理" },
-  { key: "/mall/orders", icon: <OrderedListOutlined />, label: "订单管理" },
-];
-
-// 业务中心（一级）
-const businessSubItems = [
-  { key: "/chat", icon: <MessageOutlined />, label: "对话工作台" },
-  { key: "/dashboard", icon: <DashboardOutlined />, label: "数据看板" },
-  { key: "/prompts", icon: <ExperimentOutlined />, label: "提示词版本" },
-  { key: "/feedback", icon: <LikeOutlined />, label: "反馈历史" },
-  { key: "/ops", icon: <ControlOutlined />, label: "运维观测" },
-  { key: "/recycle", icon: <DeleteOutlined />, label: "回收站" },
-];
-
-const menuItems = [
-  {
-    key: "business",
-    icon: <AppstoreOutlined />,
-    label: "业务中心",
-    children: businessSubItems,
-  },
-  {
-    key: "team",
-    icon: <TeamOutlined />,
-    label: "团队设置",
-    children: teamSubItems,
-  },
-  {
-    key: "mall",
-    icon: <ShopOutlined />,
-    label: "商城设置",
-    children: mallSubItems,
-  },
-  {
-    key: "personal",
-    icon: <UserOutlined />,
-    label: "个人设置",
-    children: [
-      { key: "/personal/profile", icon: <ContactsOutlined />, label: "个人资料" },
-    ],
-  },
-  {
-    key: "system",
-    icon: <SettingOutlined />,
-    label: "系统设置",
-    children: [
-      { key: "/system/general", icon: <GlobalOutlined />, label: "通用设置" },
-    ],
-  },
-];
-
-// 根据当前路径推断要展开的分组
-function getOpenKeys(pathname: string): string[] {
-  if (pathname.startsWith("/chat") || pathname.startsWith("/dashboard") ||
-      pathname.startsWith("/prompts") || pathname.startsWith("/feedback") ||
-      pathname.startsWith("/ops") || pathname.startsWith("/recycle")) return ["business"];
-  if (pathname.startsWith("/team/")) return ["team"];
-  if (pathname.startsWith("/mall/")) return ["mall"];
-  if (pathname.startsWith("/personal/")) return ["personal"];
-  if (pathname.startsWith("/system/")) return ["system"];
-  return ["business"];
-}
 
 function Shell() {
   const location = useLocation();
   const nav = useNavigate();
   const openKeys = getOpenKeys(location.pathname);
+  const menuItems = buildMenuItems();
 
   return (
     <Layout style={{ height: "100vh" }}>
@@ -139,7 +64,7 @@ function Shell() {
         <Menu
           mode="inline"
           defaultOpenKeys={openKeys}
-          selectedKeys={[location.pathname === "/business" ? "/chat" : location.pathname]}
+          selectedKeys={[location.pathname === "/business" ? "/dashboard" : location.pathname]}
           items={menuItems}
           onClick={({ key }) => nav(key)}
           style={{ borderRight: 0, paddingTop: 8 }}
@@ -164,25 +89,33 @@ function Shell() {
             <Route path="/recycle" element={<RecyclePage />} />
 
             {/* 团队设置 */}
+            <Route path="/team" element={<TeamHome />} />
             <Route path="/team/llm" element={<LLMSettingsPage />} />
             <Route path="/team/rag" element={<KnowledgePage />} />
             <Route path="/team/config" element={<ConfigListPage />} />
             <Route path="/team/wechat" element={<WechatPage />} />
+            <Route path="/team/douyin" element={<DouyinPage />} />
+            <Route path="/team/channels" element={<ChannelManagePage />} />
             <Route path="/team/agents" element={<AgentManagePage />} />
             <Route path="/team/visitors" element={<VisitorManagePage />} />
             <Route path="/team/service-stats" element={<ServiceStatsPage />} />
-            <Route path="/team/douyin" element={<DouyinPage />} />
 
             {/* 商城设置 */}
+            <Route path="/mall" element={<MallHome />} />
             <Route path="/mall/merchant" element={<MerchantPage />} />
             <Route path="/mall/products" element={<ProductManagePage />} />
             <Route path="/mall/orders" element={<OrderManagePage />} />
 
-            {/* 个人设置 / 系统设置 */}
+            {/* 个人设置 */}
+            <Route path="/personal" element={<PersonalHome />} />
             <Route path="/personal/profile" element={<ProfilePage />} />
-            <Route path="/system/general" element={<SystemPage />} />
 
-            <Route path="*" element={<Navigate to="/chat" replace />} />
+            {/* 系统设置 */}
+            <Route path="/system" element={<SystemHome />} />
+            <Route path="/system/general" element={<SystemGeneralPage />} />
+            <Route path="/system/badcase" element={<BadcasePage />} />
+
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Content>
       </Layout>
@@ -202,7 +135,7 @@ export default function App() {
   }
   return (
     <Routes>
-      <Route path="/login" element={<Navigate to="/chat" replace />} />
+      <Route path="/login" element={<Navigate to="/dashboard" replace />} />
       <Route path="/*" element={<Shell />} />
     </Routes>
   );

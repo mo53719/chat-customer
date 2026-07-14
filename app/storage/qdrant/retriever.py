@@ -22,13 +22,16 @@ class Retriever:
         use_rerank:
           None -> 跟随 settings.RERANK_ENABLED
           True/False -> 强制开/关
+
+        默认过滤 is_current=1，只检索当前生效版本。
         """
         from app.llm.embedding import embed_texts
 
         coll = collection or settings.QDRANT_COLLECTION
         vec = (await embed_texts([query]))[0]
 
-        must_filters = []
+        # 默认过滤：只检索当前生效版本
+        must_filters = [{"key": "is_current", "match": {"value": True}}]
         if filter_dict:
             for k, v in filter_dict.items():
                 must_filters.append({"key": k, "match": {"value": v}})
@@ -53,6 +56,7 @@ class Retriever:
             out.append({
                 "score": float(hit.score),
                 "vector_score": float(hit.score),
+                "chunk_id": payload.get("chunk_id"),
                 "doc_id": payload.get("doc_id"),
                 "title": payload.get("title"),
                 "chunk_idx": payload.get("chunk_idx"),
@@ -61,6 +65,14 @@ class Retriever:
                 "sheet": payload.get("sheet"),
                 "row": payload.get("row"),
                 "heading_path": payload.get("heading_path"),
+                "page_no": payload.get("page_no"),
+                "section": payload.get("section"),
+                "file_hash": payload.get("file_hash"),
+                "is_current": payload.get("is_current"),
+                "embedding_model": payload.get("embedding_model"),
+                "char_start": payload.get("char_start"),
+                "char_end": payload.get("char_end"),
+                "char_count": payload.get("char_count"),
             })
         _log.debug(
             f"检索 {query[:30]}... 向量召回 {len(out)} 段 "

@@ -8,11 +8,13 @@ from ..models import OrderDTO
 
 
 class OrderRepo:
+    """订单仓储，提供订单的增删改查操作。"""
     @staticmethod
     async def create(order_no: str, customer_id: int | None = None,
                      product_name: str | None = None, amount: float | None = None,
                      status: str = "pending", address: str | None = None,
                      phone: str | None = None) -> int:
+        """创建一条新订单。"""
         cur = await SqliteConnection.write_with_lock(
             "orders",
             """INSERT INTO orders (order_no, customer_id, product_name, amount, status, address, phone)
@@ -23,6 +25,7 @@ class OrderRepo:
 
     @staticmethod
     async def get_by_no(order_no: str) -> OrderDTO | None:
+        """按订单号查询订单。"""
         row = await SqliteConnection.fetchone(
             "SELECT * FROM orders WHERE order_no=? AND deleted_at IS NULL", (order_no,)
         )
@@ -32,6 +35,7 @@ class OrderRepo:
 
     @staticmethod
     async def get_by_customer(customer_id: int, limit: int = 50) -> list[OrderDTO]:
+        """按客户 ID 查询订单列表。"""
         rows = await SqliteConnection.fetchall(
             "SELECT * FROM orders WHERE customer_id=? AND deleted_at IS NULL ORDER BY id DESC LIMIT ?",
             (customer_id, limit),
@@ -40,6 +44,7 @@ class OrderRepo:
 
     @staticmethod
     async def update_address(order_no: str, address: str, phone: str | None = None) -> int:
+        """更新订单收货地址。"""
         cur = await SqliteConnection.write_with_lock(
             "orders",
             "UPDATE orders SET address=?, phone=? WHERE order_no=?",
@@ -49,6 +54,7 @@ class OrderRepo:
 
     @staticmethod
     async def update_status(order_no: str, status: str) -> int:
+        """更新订单状态。"""
         cur = await SqliteConnection.write_with_lock(
             "orders",
             "UPDATE orders SET status=? WHERE order_no=?",
@@ -59,6 +65,7 @@ class OrderRepo:
     @staticmethod
     async def search(keyword: str | None = None, status: str | None = None,
                      limit: int = 50) -> list[OrderDTO]:
+        """按关键字和状态搜索订单列表。"""
         sql = "SELECT * FROM orders WHERE deleted_at IS NULL"
         params: list[Any] = []
         if keyword:
@@ -75,6 +82,7 @@ class OrderRepo:
 
     @staticmethod
     async def soft_delete(order_id: int, deleted_by: str | None = None) -> None:
+        """软删除订单，删除前快照到回收站。"""
         from .recycle_repo import recycle_repo
         row = await SqliteConnection.fetchone(
             "SELECT * FROM orders WHERE id=?", (order_id,)

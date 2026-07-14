@@ -10,7 +10,7 @@ const { Title, Paragraph } = Typography;
 const QUICK_LINKS = [
   { key: "/chat", icon: <MessageOutlined />, title: "对话工作台", desc: "与访客进行实时对话", color: "#1677ff" },
   { key: "/dashboard", icon: <DashboardOutlined />, title: "数据看板", desc: "会话量、消息量、转化率", color: "#52c41a" },
-  { key: "/knowledge", icon: <FileTextOutlined />, title: "RAG 知识库", desc: "管理可被 RAG 召回的业务文档", color: "#fa8c16" },
+  { key: "/team/rag", icon: <FileTextOutlined />, title: "RAG 知识库", desc: "管理可被 RAG 召回的业务文档", color: "#fa8c16" },
   { key: "/prompts", icon: <ExperimentOutlined />, title: "提示词版本", desc: "Agent 系统提示词的版本管理", color: "#722ed1" },
   { key: "/feedback", icon: <LikeOutlined />, title: "反馈历史", desc: "用户反馈与智能分析", color: "#eb2f96" },
   { key: "/ops", icon: <ControlOutlined />, title: "运维观测", desc: "工具调用、Token、异常监控", color: "#13c2c2" },

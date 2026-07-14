@@ -21,6 +21,7 @@ _load_lock = asyncio.Lock()
 
 
 def _load_model():
+    """加载 fastembed CrossEncoder 模型（离线模式，走本地缓存）。"""
     global _model
     if _model is not None:
         return _model
@@ -73,6 +74,7 @@ async def rerank(query: str, candidates: list[dict[str, Any]],
         docs = [c.get("text", "") for c in candidates]
 
         def _score():
+            """执行 rerank 打分，返回每个文档的相关性分数。"""
             return list(model.rerank(query=query, documents=docs))
 
         scores = await asyncio.to_thread(_score)

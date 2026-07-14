@@ -32,3 +32,9 @@ async def top_errors(days: int = Query(7, ge=1, le=90),
 async def task_latency(days: int = Query(7, ge=1, le=90),
                        user: dict = Depends(require_admin)):
     return ApiResponse(data=await ops_service.task_latency(days))
+
+
+@router.get("/system-status", response_model=ApiResponse)
+async def system_status(user: dict = Depends(require_admin)):
+    """系统状态检查：数据库、Qdrant、磁盘、内存、在线客服。"""
+    return ApiResponse(data=await ops_service.system_status())

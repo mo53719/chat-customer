@@ -47,6 +47,8 @@ class Settings(BaseSettings):
     RERANK_FINAL_K: int = 5                          # rerank 后最终返回
 
     # Qdrant
+    QDRANT_MODE: str = "local"          # "local"（本地服务） | "embed"（嵌入式）
+    QDRANT_PATH: str = "data/qdrant"    # 嵌入式模式数据目录
     QDRANT_URL: str = "http://localhost:6333"
     QDRANT_API_KEY: str = ""
     QDRANT_COLLECTION: str = "chat_customer_kb"
@@ -66,7 +68,7 @@ class Settings(BaseSettings):
 
     # 熔断 / 限流 / 超时
     MAX_TOOL_ROUNDS: int = 6
-    TASK_TIMEOUT_SEC: int = 60
+    TASK_TIMEOUT_SEC: int = 120
     CIRCUIT_FAIL_THRESHOLD: int = 5
     CIRCUIT_RECOVER_SEC: int = 30
     LLM_RETRY_MAX: int = 3
@@ -115,6 +117,14 @@ class Settings(BaseSettings):
         p = Path(self.EMBEDDING_LOCAL_PATH)
         if not p.is_absolute():
             p = PROJECT_ROOT / p
+        return p
+
+    @property
+    def qdrant_abs_path(self) -> Path:
+        p = Path(self.QDRANT_PATH)
+        if not p.is_absolute():
+            p = PROJECT_ROOT / p
+        p.mkdir(parents=True, exist_ok=True)
         return p
 
 

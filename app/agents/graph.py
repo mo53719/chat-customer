@@ -1,6 +1,6 @@
 """LangGraph 主图编排。
 
-流程：START -> safety -> router -> [presales/aftersales/order/rag/orchestrator/fallback] -> END
+流程：START -> safety -> router -> [presales/aftersales/order/rag/orchestrator/fallback] -> reviewer -> END
 """
 from __future__ import annotations
 
@@ -23,6 +23,7 @@ from .order_agent import order_agent
 from .rag_agent import rag_agent
 from .orchestrator import orchestrator
 from .fallback import fallback_node, timeout_fallback
+from .reviewer_agent import reviewer_agent
 
 _log = get_logger("agents.graph")
 
@@ -47,6 +48,7 @@ class AgentStateGraph:
         g.add_node("rag", _wrap(rag_agent))
         g.add_node("orchestrator", _wrap(orchestrator))
         g.add_node("fallback", _wrap(fallback_node))
+        g.add_node("reviewer", _wrap(reviewer_agent))
 
         g.set_entry_point("safety")
 
@@ -69,7 +71,9 @@ class AgentStateGraph:
         )
 
         for n in ("presales", "aftersales", "order", "rag", "orchestrator", "fallback"):
-            g.add_edge(n, END)
+            g.add_edge(n, "reviewer")
+
+        g.add_edge("reviewer", END)
 
         return g
 
@@ -189,6 +193,7 @@ async def run_agent(user_input: str, session_id: str,
             "agent": final_state.current_agent,
             "tool_calls": final_state.tool_results,
             "tool_calls_count": final_state.tool_calls_count,
+            "rag_hits": final_state.rag_hits,
             "latency_ms": latency,
             "token_input": final_state.token_input,
             "token_output": final_state.token_output,

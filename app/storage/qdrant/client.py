@@ -1,4 +1,4 @@
-"""Qdrant 客户端单例。"""
+"""Qdrant 客户端单例。支持 local（本地服务）和 embed（嵌入式）两种模式。"""
 from __future__ import annotations
 
 from qdrant_client import AsyncQdrantClient
@@ -11,12 +11,19 @@ _qdrant: AsyncQdrantClient | None = None
 def get_qdrant() -> AsyncQdrantClient:
     global _qdrant
     if _qdrant is None:
-        _qdrant = AsyncQdrantClient(
-            url=settings.QDRANT_URL,
-            api_key=settings.QDRANT_API_KEY or None,
-            # 默认 5s 太短，云端经常超时；给读写 30s 容差
-            timeout=30.0,
-        )
+        if settings.QDRANT_MODE == "embed":
+            # 嵌入式：数据存放在本地文件夹，无需单独启动 Qdrant 服务
+            _qdrant = AsyncQdrantClient(
+                path=str(settings.qdrant_abs_path),
+                timeout=30.0,
+            )
+        else:
+            # 本地服务：需要先启动 Qdrant 服务（http://localhost:6333）
+            _qdrant = AsyncQdrantClient(
+                url=settings.QDRANT_URL,
+                api_key=settings.QDRANT_API_KEY or None,
+                timeout=30.0,
+            )
     return _qdrant
 
 

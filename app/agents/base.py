@@ -30,6 +30,13 @@ async def run_business_agent(state: AgentState, agent_name: str,
     if not sys_prompt:
         sys_prompt = f"你是 {agent_name} Agent，请回应用户请求。"
 
+    # 强制注入 RAG 上下文（agent 层预取，确保 LLM 不会漏查知识库）
+    if state.rag_context:
+        sys_prompt += "\n\n## 知识库检索结果（已预取，优先参考）\n"
+        sys_prompt += "以下是从知识库中检索到的与用户问题最相关的内容，请优先基于这些内容回答：\n\n"
+        sys_prompt += state.rag_context
+        sys_prompt += "\n\n注意：如果上述知识库内容能回答用户问题，直接使用，不要编造信息。"
+
     # 加载优质示例（few-shot）
     examples = await example_store.list_good(agent_name, limit=3)
     state.examples = examples
@@ -102,6 +109,25 @@ async def run_business_agent(state: AgentState, agent_name: str,
 
             state.tool_results.append({"tool": tool_name, "args": args,
                                         "result": tool_result_data})
+
+            # 捕获 RAG 检索命中，供前端溯源引用
+            if tool_name == "rag_search" and tool_result_data.get("success"):
+                hits = tool_result_data.get("data", [])
+                if isinstance(hits, list):
+                    for h in hits:
+                        if isinstance(h, dict):
+                            state.rag_hits.append({
+                                "chunk_id": h.get("chunk_id"),
+                                "doc_id": h.get("doc_id"),
+                                "title": h.get("title"),
+                                "text": h.get("text", "")[:200],
+                                "source": h.get("source"),
+                                "page_no": h.get("page_no"),
+                                "sheet": h.get("sheet"),
+                                "row": h.get("row"),
+                                "heading_path": h.get("heading_path"),
+                                "score": h.get("score"),
+                            })
             messages.append({
                 "role": "tool",
                 "tool_call_id": tc.get("id"),
@@ -110,4 +136,21 @@ async def run_business_agent(state: AgentState, agent_name: str,
             })
 
     state.error = f"{agent_name} 工具循环超出最大轮次"
+
+    # 兜底：轮次用尽且没答案，再调一次 LLM（不带工具）强制输出文本
+    if not state.final_answer:
+        _log.warning(f"{agent_name} 工具轮次用尽且无答案，兜底调 LLM（无工具）")
+        try:
+            resp = await chat(
+                messages=messages, tools=None,
+                agent_name=agent_name, session_id=state.session_id,
+            )
+            state.token_input += resp.prompt_tokens
+            state.token_output += resp.completion_tokens
+            state.final_answer = resp.content or "抱歉，我暂时无法回答这个问题，请换个方式描述。"
+            state.error = None
+        except Exception as e:
+            state.error = f"{agent_name} 兜底调用失败: {e}"
+            state.final_answer = "抱歉，系统暂时无法处理您的请求，请稍后再试。"
+
     return state

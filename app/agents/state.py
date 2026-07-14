@@ -47,8 +47,19 @@ class AgentState:
     final_answer: str = ""
     error: str | None = None
 
+    # 预取 RAG 上下文（agent 层在调 LLM 前强制注入知识库内容）
+    rag_context: str = ""
+
+    # RAG 检索命中（用于前端溯源引用）
+    rag_hits: list[dict[str, Any]] = field(default_factory=list)
+
     # few-shot 示例
     examples: list[dict[str, Any]] = field(default_factory=list)
+
+    # reviewer 评分
+    review_status: str = ""
+    review_warnings: list[str] = field(default_factory=list)
+    review_details: list[dict] = field(default_factory=list)
 
     # 元数据
     latency_ms: int | None = None

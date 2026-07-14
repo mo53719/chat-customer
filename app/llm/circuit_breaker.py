@@ -13,6 +13,12 @@ class CircuitBreaker:
     """简易熔断器：closed -> open -> half_open -> closed。"""
 
     def __init__(self, fail_threshold: int = 5, recover_sec: int = 30):
+        """初始化熔断器参数。
+
+        Args:
+            fail_threshold: 连续失败次数阈值，达到后开启熔断
+            recover_sec: 熔断后等待多少秒进入半开探测状态
+        """
         self.fail_threshold = fail_threshold
         self.recover_sec = recover_sec
         self._fail_count = 0
@@ -21,6 +27,10 @@ class CircuitBreaker:
 
     @property
     def state(self) -> str:
+        """返回当前熔断状态，含自动半开探测逻辑。
+
+        open 状态下若已过 recover_sec，自动切换为 half_open。
+        """
         if self._state == "open" and self._opened_at is not None:
             if time.time() - self._opened_at >= self.recover_sec:
                 self._state = "half_open"
@@ -28,9 +38,11 @@ class CircuitBreaker:
         return self._state
 
     def allow(self) -> bool:
+        """判断是否允许请求通过。closed 或 half_open 状态时放行。"""
         return self.state in ("closed", "half_open")
 
     def record_success(self) -> None:
+        """记录一次成功调用，重置熔断器为 closed 状态。"""
         if self._state in ("open", "half_open"):
             _log.info("熔断器恢复")
         self._fail_count = 0
@@ -38,6 +50,7 @@ class CircuitBreaker:
         self._opened_at = None
 
     def record_failure(self) -> None:
+        """记录一次失败调用，失败次数达标时开启熔断。"""
         self._fail_count += 1
         if self._state == "half_open" or self._fail_count >= self.fail_threshold:
             self._state = "open"

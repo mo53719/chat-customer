@@ -12,7 +12,7 @@ from app.storage.sqlite.connection import SqliteConnection
 from app.storage.qdrant.client import close_qdrant
 from app.api.routes import (
     auth, chat, session, log, stats, order, knowledge,
-    prompts, feedback, ops, recycle, product, agent_models,
+    prompts, feedback, ops, recycle, product, agent_models, channel, badcase,
 )
 
 
@@ -62,7 +62,7 @@ app.add_middleware(
 
 # 注册路由
 for r in (auth, chat, session, log, stats, order, knowledge,
-          prompts, feedback, ops, recycle, product, agent_models):
+          prompts, feedback, ops, recycle, product, agent_models, channel, badcase):
     app.include_router(r.router)
 
 

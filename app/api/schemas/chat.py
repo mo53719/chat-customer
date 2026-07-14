@@ -17,6 +17,7 @@ class ChatResponse(BaseModel):
     intent: str | None = None
     agent: str | None = None
     tool_calls_count: int = 0
+    rag_hits: list[dict] | None = None
     latency_ms: int | None = None
     token_input: int = 0
     token_output: int = 0

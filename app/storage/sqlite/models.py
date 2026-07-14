@@ -11,6 +11,7 @@ from typing import Any
 
 @dataclass
 class ProductCategoryDTO:
+    """商品分类数据传输对象。"""
     id: int | None = None
     name: str = ""
     parent_id: int | None = None
@@ -19,6 +20,7 @@ class ProductCategoryDTO:
 
 @dataclass
 class ProductDTO:
+    """商品主表数据传输对象，含 SKU、价格、库存、规格等字段。"""
     id: int | None = None
     sku: str = ""
     name: str = ""
@@ -42,11 +44,13 @@ class ProductDTO:
     updated_at: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
+        """将 DTO 转为字典。"""
         return asdict(self)
 
 
 @dataclass
 class OrderItemDTO:
+    """订单明细数据传输对象。"""
     id: int | None = None
     order_id: int = 0
     product_id: int = 0
@@ -59,6 +63,7 @@ class OrderItemDTO:
 
 @dataclass
 class AfterSalesDTO:
+    """售后工单数据传输对象。"""
     id: int | None = None
     ticket_no: str = ""
     order_id: int = 0
@@ -75,6 +80,7 @@ class AfterSalesDTO:
 
 @dataclass
 class UserDTO:
+    """用户数据传输对象。"""
     id: int | None = None
     username: str = ""
     role: str = "user"
@@ -84,11 +90,13 @@ class UserDTO:
     created_at: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
+        """将 DTO 转为字典。"""
         return asdict(self)
 
 
 @dataclass
 class OrderDTO:
+    """订单主表数据传输对象。"""
     id: int | None = None
     order_no: str = ""
     customer_id: int | None = None
@@ -102,6 +110,7 @@ class OrderDTO:
 
 @dataclass
 class SessionDTO:
+    """会话数据传输对象，含访客名片字段。"""
     id: int | None = None
     session_id: str = ""
     user_id: int | None = None
@@ -131,6 +140,7 @@ class SessionDTO:
 
 @dataclass
 class MessageDTO:
+    """消息数据传输对象，含 Token 和耗时统计。"""
     id: int | None = None
     session_id: str = ""
     role: str = "user"
@@ -147,6 +157,7 @@ class MessageDTO:
 
 @dataclass
 class PromptVersionDTO:
+    """提示词版本数据传输对象。"""
     id: int | None = None
     agent_name: str = ""
     version_no: int = 0
@@ -161,6 +172,7 @@ class PromptVersionDTO:
 
 @dataclass
 class FeedbackDTO:
+    """用户反馈数据传输对象。"""
     id: int | None = None
     message_id: int | None = None
     session_id: str | None = None
@@ -174,6 +186,7 @@ class FeedbackDTO:
 
 @dataclass
 class FeedbackAnalysisDTO:
+    """反馈分析结果数据传输对象。"""
     id: int | None = None
     feedback_id: int | None = None
     category: str | None = None
@@ -185,6 +198,7 @@ class FeedbackAnalysisDTO:
 
 @dataclass
 class ExampleDTO:
+    """优质/差评示例数据传输对象。"""
     id: int | None = None
     agent_name: str | None = None
     question: str = ""
@@ -196,6 +210,7 @@ class ExampleDTO:
 
 @dataclass
 class KnowledgeMetaDTO:
+    """知识库文档元数据传输对象。"""
     id: int | None = None
     doc_id: str = ""
     title: str | None = None
@@ -205,10 +220,26 @@ class KnowledgeMetaDTO:
     status: str = "processing"
     uploaded_by: str | None = None
     created_at: str | None = None
+    # 可溯源字段
+    file_hash: str | None = None
+    parent_doc_id: str | None = None
+    is_current: int = 1
+    embedding_model: str | None = None
+    embedding_version: str | None = None
+    total_pages: int | None = None
+    uploader_role: str | None = None
+    tags: str | None = None
+    doc_origin_url: str | None = None
+    language: str | None = "zh"
+    char_count: int = 0
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
 
 
 @dataclass
 class DeletedRecordDTO:
+    """回收站记录数据传输对象。"""
     id: int | None = None
     table_name: str = ""
     record_id: int = 0
@@ -216,3 +247,22 @@ class DeletedRecordDTO:
     deleted_by: str | None = None
     deleted_at: str | None = None
     restored_at: str | None = None
+
+
+@dataclass
+class BadcaseDTO:
+    """失败案例数据传输对象，记录 review 不通过的回答。"""
+    id: int | None = None
+    session_id: str | None = None
+    user_input: str = ""
+    agent_answer: str | None = None
+    intent: str | None = None
+    agent_name: str | None = None
+    failed_rules: list[str] | None = None
+    review_details: list[dict] | None = None
+    trace_id: str | None = None
+    status: str = "new"
+    note: str | None = None
+    created_at: str | None = None
+    reviewed_at: str | None = None
+    reviewed_by: str | None = None
