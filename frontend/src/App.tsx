@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Layout, Menu, Typography } from "antd";
+import { Layout, Menu, Typography, Result, Button } from "antd";
 import { useAuthStore } from "./stores";
-import { buildMenuItems, getOpenKeys } from "./pages/_shared/registry";
+import { buildMenuItems, getOpenKeys, isAdminPage } from "./pages/_shared/registry";
 
 import LoginPage from "./pages/login";
 import BusinessHome from "./pages/business";
@@ -36,15 +36,33 @@ import ProfilePage from "./pages/personal/profile";
 import SystemHome from "./pages/system";
 import SystemGeneralPage from "./pages/system/general";
 import BadcasePage from "./pages/system/badcase";
+import OperationLogPage from "./pages/system/operation-log";
 
 const { Header: AntHeader, Sider, Content } = Layout;
 const { Text } = Typography;
 
+/** 管理员路由守卫：非管理员访问时显示 403 */
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const role = useAuthStore((s) => s.role);
+  if (role !== "admin") {
+    return (
+      <Result
+        status="403"
+        title="403"
+        subTitle="抱歉，您没有权限访问此页面。"
+        extra={<Button type="primary" onClick={() => window.location.href = "/dashboard"}>返回首页</Button>}
+      />
+    );
+  }
+  return <>{children}</>;
+}
+
 function Shell() {
   const location = useLocation();
   const nav = useNavigate();
+  const role = useAuthStore((s) => s.role);
   const openKeys = getOpenKeys(location.pathname);
-  const menuItems = buildMenuItems();
+  const menuItems = buildMenuItems(role);
 
   return (
     <Layout style={{ height: "100vh" }}>
@@ -85,24 +103,24 @@ function Shell() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/prompts" element={<PromptsPage />} />
             <Route path="/feedback" element={<FeedbackPage />} />
-            <Route path="/ops" element={<OpsPage />} />
-            <Route path="/recycle" element={<RecyclePage />} />
+            <Route path="/ops" element={<AdminRoute><OpsPage /></AdminRoute>} />
+            <Route path="/recycle" element={<AdminRoute><RecyclePage /></AdminRoute>} />
 
             {/* 团队设置 */}
             <Route path="/team" element={<TeamHome />} />
-            <Route path="/team/llm" element={<LLMSettingsPage />} />
+            <Route path="/team/llm" element={<AdminRoute><LLMSettingsPage /></AdminRoute>} />
             <Route path="/team/rag" element={<KnowledgePage />} />
-            <Route path="/team/config" element={<ConfigListPage />} />
+            <Route path="/team/config" element={<AdminRoute><ConfigListPage /></AdminRoute>} />
             <Route path="/team/wechat" element={<WechatPage />} />
             <Route path="/team/douyin" element={<DouyinPage />} />
-            <Route path="/team/channels" element={<ChannelManagePage />} />
-            <Route path="/team/agents" element={<AgentManagePage />} />
+            <Route path="/team/channels" element={<AdminRoute><ChannelManagePage /></AdminRoute>} />
+            <Route path="/team/agents" element={<AdminRoute><AgentManagePage /></AdminRoute>} />
             <Route path="/team/visitors" element={<VisitorManagePage />} />
             <Route path="/team/service-stats" element={<ServiceStatsPage />} />
 
             {/* 商城设置 */}
             <Route path="/mall" element={<MallHome />} />
-            <Route path="/mall/merchant" element={<MerchantPage />} />
+            <Route path="/mall/merchant" element={<AdminRoute><MerchantPage /></AdminRoute>} />
             <Route path="/mall/products" element={<ProductManagePage />} />
             <Route path="/mall/orders" element={<OrderManagePage />} />
 
@@ -111,9 +129,10 @@ function Shell() {
             <Route path="/personal/profile" element={<ProfilePage />} />
 
             {/* 系统设置 */}
-            <Route path="/system" element={<SystemHome />} />
-            <Route path="/system/general" element={<SystemGeneralPage />} />
-            <Route path="/system/badcase" element={<BadcasePage />} />
+            <Route path="/system" element={<AdminRoute><SystemHome /></AdminRoute>} />
+            <Route path="/system/general" element={<AdminRoute><SystemGeneralPage /></AdminRoute>} />
+            <Route path="/system/badcase" element={<AdminRoute><BadcasePage /></AdminRoute>} />
+            <Route path="/system/operation-log" element={<AdminRoute><OperationLogPage /></AdminRoute>} />
 
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>

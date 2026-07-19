@@ -1,0 +1,3 @@
+-- 011_admin_user: 创建默认管理员账号
+-- 密码通过 Python 初始化脚本设置，此处仅占位
+-- 如果 admin 用户不存在，将通过 init_admin.py 创建

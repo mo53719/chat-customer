@@ -81,6 +81,18 @@ class Settings(BaseSettings):
     # 兜底
     FALLBACK_TEXT: str = "抱歉，我暂时无法处理您的请求，已为您转接人工客服。"
 
+    # 意图缓存
+    INTENT_CACHE_SIZE: int = 100
+
+    # 三层漏斗路由
+    RULE_ROUTER_ENABLED: bool = True              # 是否启用规则层（Layer 1）
+    SEMANTIC_ROUTER_ENABLED: bool = True          # 是否启用语义层（Layer 2）
+    SEMANTIC_SIMILARITY_THRESHOLD: float = 0.7    # 语义层相似度阈值
+    SEMANTIC_HISTORY_BOOST: float = 0.1           # 对话历史一致性加成
+
+    # RAG 超时
+    RAG_TIMEOUT: float = 3.0
+
     # 服务
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8000

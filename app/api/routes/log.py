@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from config.settings import settings
 from app.storage.sqlite.repositories.log_repo import log_repo
 from ..schemas.common import ApiResponse
-from ..deps import get_current_user
+from ..deps import get_current_user, require_admin
 
 router = APIRouter(prefix="/api/logs", tags=["日志"])
 
@@ -121,3 +121,30 @@ async def search_log_files(
         trace_id=trace_id, limit=limit,
     )
     return {"data": results, "total": len(results)}
+
+
+@router.get("/page-ops", response_model=ApiResponse)
+async def list_page_ops(
+    page: str | None = Query(None),
+    action: str | None = Query(None),
+    user_id: int | None = Query(None),
+    limit: int = Query(50, le=200),
+    user: dict = Depends(require_admin),
+):
+    """查询页面操作日志。"""
+    from app.storage.sqlite.connection import SqliteConnection
+    sql = "SELECT * FROM page_operation_logs WHERE 1=1"
+    params: list = []
+    if page:
+        sql += " AND page LIKE ?"
+        params.append(f"%{page}%")
+    if action:
+        sql += " AND action=?"
+        params.append(action)
+    if user_id:
+        sql += " AND user_id=?"
+        params.append(user_id)
+    sql += " ORDER BY id DESC LIMIT ?"
+    params.append(limit)
+    rows = await SqliteConnection.fetchall(sql, tuple(params))
+    return ApiResponse(data=rows)

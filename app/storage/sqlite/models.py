@@ -105,7 +105,12 @@ class OrderDTO:
     status: str = "pending"
     address: str | None = None
     phone: str | None = None
+    after_sales_status: str = ""
+    user_id: str = ""
+    total_amount: float = 0.0
+    remark: str | None = None
     created_at: str | None = None
+    updated_at: str | None = None
 
 
 @dataclass
@@ -247,6 +252,86 @@ class DeletedRecordDTO:
     deleted_by: str | None = None
     deleted_at: str | None = None
     restored_at: str | None = None
+
+
+@dataclass
+class ConfigItemDTO:
+    """配置项数据传输对象。"""
+    id: int | None = None
+    name: str = ""
+    config_type: str = ""
+    config_value: str = "{}"
+    description: str = ""
+    is_enabled: int = 1
+    updated_by: str | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
+class ConfigChangeLogDTO:
+    """配置变更记录数据传输对象。"""
+    id: int | None = None
+    config_id: int = 0
+    field_name: str | None = None
+    old_value: str | None = None
+    new_value: str | None = None
+    changed_by: str | None = None
+    changed_at: str | None = None
+
+
+@dataclass
+class AgentDTO:
+    """客服人员数据传输对象。"""
+    id: int | None = None
+    name: str = ""
+    account: str = ""
+    department: str = ""
+    status: str = "offline"
+    current_sessions: int = 0
+    max_sessions: int = 5
+    channel: str = ""
+    role: str = "agent"
+    created_at: str | None = None
+    updated_at: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
+class MerchantConfigDTO:
+    """商家设置数据传输对象。"""
+    id: int | None = None
+    shop_name: str = ""
+    shop_logo: str = ""
+    service_hours: str = "09:00-18:00"
+    auto_reply: str = ""
+    auto_reply_enabled: int = 1
+    support_contact: str = ""
+    updated_at: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
+class SystemConfigDTO:
+    """系统通用设置数据传输对象。"""
+    id: int | None = None
+    system_name: str = "智能客服系统"
+    login_timeout: int = 30
+    log_retention_days: int = 90
+    message_push_enabled: int = 1
+    data_backup_enabled: int = 0
+    data_backup_time: str = "03:00"
+    updated_at: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
 
 
 @dataclass

@@ -81,6 +81,38 @@ class OrderRepo:
         return [OrderDTO(**{k: r[k] for k in OrderDTO.__annotations__ if k in r}) for r in rows]
 
     @staticmethod
+    async def list_all(page: int = 1, page_size: int = 20,
+                       keyword: str | None = None,
+                       status: str | None = None,
+                       after_sales_status: str | None = None) -> tuple[list[OrderDTO], int]:
+        """分页列出所有订单，支持多条件筛选。返回 (列表, 总数)。"""
+        where = "WHERE deleted_at IS NULL"
+        params: list[Any] = []
+        if keyword:
+            where += " AND (order_no LIKE ? OR product_name LIKE ? OR phone LIKE ?)"
+            kw = f"%{keyword}%"
+            params.extend([kw, kw, kw])
+        if status:
+            where += " AND status=?"
+            params.append(status)
+        if after_sales_status:
+            where += " AND after_sales_status=?"
+            params.append(after_sales_status)
+
+        # 总数
+        count_sql = f"SELECT COUNT(*) as cnt FROM orders {where}"
+        count_row = await SqliteConnection.fetchone(count_sql, tuple(params) if params else None)
+        total = count_row["cnt"] if count_row else 0
+
+        # 分页数据
+        offset = (page - 1) * page_size
+        data_sql = f"SELECT * FROM orders {where} ORDER BY id DESC LIMIT ? OFFSET ?"
+        rows = await SqliteConnection.fetchall(
+            data_sql, tuple(params + [page_size, offset])
+        )
+        return [OrderDTO(**{k: r[k] for k in OrderDTO.__annotations__ if k in r}) for r in rows], total
+
+    @staticmethod
     async def soft_delete(order_id: int, deleted_by: str | None = None) -> None:
         """软删除订单，删除前快照到回收站。"""
         from .recycle_repo import recycle_repo

@@ -35,6 +35,9 @@ class AgentState:
     # 当前 Agent
     current_agent: str = ""
 
+    # 三层漏斗路由信息
+    router_layer: str = ""  # "rule" | "semantic" | "llm"
+
     # 工具循环控制
     tool_calls_count: int = 0
     max_tool_rounds: int = 6
@@ -46,6 +49,9 @@ class AgentState:
     # 最终输出
     final_answer: str = ""
     error: str | None = None
+
+    # 是否需要 RAG 搜索（greeting/闲聊不需要）
+    need_rag: bool = True
 
     # 预取 RAG 上下文（agent 层在调 LLM 前强制注入知识库内容）
     rag_context: str = ""
